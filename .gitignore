@@ -13,6 +13,8 @@ credentials/credentials.json
 credentials/token.json
 credentials/auth_url.txt
 credentials/code.txt
+credentials/flow_state.json
+credentials/code_verifier.txt
 
 # ===== Local data =====
 data/app.db
