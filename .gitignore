@@ -1,0 +1,26 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ===== Virtual environment =====
+venv/
+.venv/
+
+# ===== Secrets: NEVER commit these =====
+.env
+credentials/credentials.json
+credentials/token.json
+credentials/auth_url.txt
+credentials/code.txt
+
+# ===== Local data =====
+data/app.db
+data/downloads/
+data/generated/
+
+# ===== OS / editor cruft =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

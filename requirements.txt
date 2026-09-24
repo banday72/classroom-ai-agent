@@ -1,0 +1,16 @@
+# Google APIs
+google-auth>=2.30.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+google-api-python-client>=2.130.0
+
+# Environment variables
+python-dotenv>=1.0.1
+
+# Document reading / writing
+python-docx>=1.1.2
+PyMuPDF>=1.24.0
+Pillow>=10.3.0
+
+# AI API calls (plain HTTP so you can learn the logic)
+requests>=2.32.0
