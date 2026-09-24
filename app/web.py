@@ -323,5 +323,5 @@ def _info_from_row(row) -> dict:
 if __name__ == "__main__":
     port = 5000
     threading.Timer(1.5, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
-    print(f"WEB_UI http://127.0.0.1:{port}", flush=True)
-    app.run(host="127.0.0.1", port=port, debug=False, threaded=True)
+    print(f"WEB_UI on port {port} (0.0.0.0 = reachable from other devices on the same WiFi)", flush=True)
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
