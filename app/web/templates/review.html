@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review &mdash; {{ row['title'] }}</title>
+<style>
+  body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:#f5f7fa; color:#202124; }
+  header { background:#1a73e8; color:#fff; padding:14px 24px; display:flex; align-items:center; gap:18px; }
+  header h1 { font-size:18px; margin:0; }
+  nav a { color:#fff; text-decoration:none; margin-right:14px; opacity:.9; }
+  main { max-width:840px; margin:22px auto; padding:0 16px; }
+  .card { background:#fff; border:1px solid #e1e4e8; border-radius:10px; padding:18px 20px; margin-bottom:16px; }
+  .muted { color:#5f6368; font-size:13px; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+  .badge.secondary{background:#e8eaed;color:#5f6368} .badge.primary{background:#d2e3fc;color:#1a56a8}
+  .badge.warning{background:#fef7e0;color:#9a6700} .badge.success{background:#e6f4ea;color:#137333}
+  .badge.light{background:#f1f1f1;color:#5f6368}
+  .msg { padding:10px 14px; border-radius:8px; margin-bottom:16px; }
+  .ok { background:#e6f4ea; color:#137333; } .err { background:#fce8e6; color:#c5221f; }
+  pre.solution { background:#fafafa; border:1px solid #eee; border-radius:8px; padding:14px; white-space:pre-wrap;
+                 font-family:Consolas,monospace; font-size:13.5px; max-height:460px; overflow:auto; }
+  textarea { width:100%; min-height:340px; font-family:Consolas,monospace; font-size:13.5px; padding:12px;
+             border:1px solid #ddd; border-radius:8px; box-sizing:border-box; }
+  button { padding:9px 16px; border-radius:7px; border:none; cursor:pointer; font-size:14px; margin:0 8px 8px 0; }
+  button.view { background:#e8eaed; color:#3c4043; }
+  button.reg { background:#fbbc04; color:#3c4043; }
+  button.approve { background:#1a73e8; color:#fff; }
+  button.cancel { background:#d93025; color:#fff; }
+  input.confirm { padding:9px 12px; border:1px solid #ccc; border-radius:7px; font-size:14px; }
+  h3 { margin:0 0 6px 0; font-size:15px; }
+  .gate { background:#fef7e0; border:1px solid #fde293; border-radius:10px; padding:16px 18px; margin-top:8px; }
+  a { color:#1a73e8; }
+</style>
+</head>
+<body>
+<header><h1>Review solution</h1><nav><a href="/">Dashboard</a></nav></header>
+<main>
+  {% if msg %}<div class="msg {% if 'fail' in msg or 'must type' in msg %}err{% else %}ok{% endif %}">{{ msg }}</div>{% endif %}
+  {% if error %}<div class="msg err">Could not read the answer file: {{ error }}</div>{% endif %}
+
+  <div class="card">
+    <h2 style="margin-top:0">{{ row['title'] }}</h2>
+    <p class="muted">{{ row['course_name'] }} &middot; Due: {{ row['due_date'] or 'no due date' }}
+      &middot; Status: <span class="badge {{ {'pending':'secondary','ready':'primary','approved':'warning','submitted':'success','cancelled':'light'}[row['status']] }}">{{ row['status'] }}</span>
+    </p>
+    {% if row['answer_path'] %}<p class="muted">Answer file: <b>{{ row['answer_path'] }}</b></p>{% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Solution</h3>
+    <pre class="solution">{{ solution_text or "(not generated yet)" }}</pre>
+    <p style="margin-bottom:6px">
+      <button class="reg" onclick="regenForm.submit()">Regenerate solution</button>
+      <button class="view" onclick="editForm.style.display='block'">Edit output</button>
+      <button class="cancel" onclick="cancelForm.submit()">Cancel (keep draft)</button>
+    </p>
+    <form id="regenForm" method="post" action="/review/{{ row['id'] }}/regenerate" style="display:none"></form>
+    <form id="cancelForm" method="post" action="/review/{{ row['id'] }}/cancel" style="display:none"></form>
+
+    <div id="editForm" style="display:none; margin-top:14px">
+      <h3>Edit the solution text</h3>
+      <textarea name="solution_text" id="solutionText">{{ solution_text or '' }}</textarea>
+      <form method="post" action="/review/{{ row['id'] }}/edit" style="margin-top:8px">
+        <input type="hidden" name="solution_text" id="solutionTextHidden">
+        <button class="approve" type="submit" onclick="document.getElementById('solutionTextHidden').value=document.getElementById('solutionText').value">Save edit</button>
+      </form>
+    </div>
+  </div>
+
+  {% if row['status'] in ['ready','approved'] %}
+  <div class="card">
+    <div class="gate">
+      <h3>Turn in on Google Classroom</h3>
+      <p class="muted">Submitting marks this assignment as <b>'Turned in'</b> on Classroom. This needs your explicit approval.</p>
+      <form method="post" action="/review/{{ row['id'] }}/approve">
+        <input class="confirm" type="text" name="confirm" placeholder="Type APPROVE (all caps)" autocomplete="off" required>
+        <button class="approve" type="submit">Approve &amp; turn in</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Process &mdash; {{ row['title'] }}</title>
+<style>
+  body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:#f5f7fa; color:#202124; }
+  header { background:#1a73e8; color:#fff; padding:14px 24px; display:flex; align-items:center; gap:18px; }
+  header h1 { font-size:18px; margin:0; }
+  nav a { color:#fff; text-decoration:none; margin-right:14px; opacity:.9; }
+  main { max-width:800px; margin:22px auto; padding:0 16px; }
+  .card { background:#fff; border:1px solid #e1e4e8; border-radius:10px; padding:18px 20px; margin-bottom:16px; }
+  .muted { color:#5f6368; font-size:13px; }
+  .msg { padding:10px 14px; border-radius:8px; margin-bottom:16px; }
+  .err { background:#fce8e6; color:#c5221f; }
+  button.btn { padding:10px 18px; border-radius:7px; border:none; cursor:pointer; font-size:14px; }
+  button.go { background:#1a73e8; color:#fff; }
+  a { color:#1a73e8; }
+</style>
+</head>
+<body>
+<header><h1>Process assignment</h1><nav><a href="/">Dashboard</a></nav></header>
+<main>
+  {% if msg %}<div class="msg err">{{ msg }}</div>{% endif %}
+  <div class="card">
+    <h2 style="margin-top:0">{{ row['title'] }}</h2>
+    <p class="muted">{{ row['course_name'] }} &nbsp;&middot;&nbsp; Due: {{ row['due_date'] or 'no due date' }}</p>
+    {% if row['description'] %}<p>{{ row['description'] }}</p>{% endif %}
+    <p class="muted">Status: <b>{{ current_status }}</b></p>
+  </div>
+  <div class="card">
+    <p>Processing runs this pipeline: <b>download attachments &rarr; read them &rarr;
+       ask the AI to solve &rarr; generate a .docx answer &rarr; review page.</b>
+       Nothing is submitted to Classroom at this stage.</p>
+    <form method="post" action="/process/{{ row['id'] }}/run">
+      <button class="btn go" type="submit">Start processing</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

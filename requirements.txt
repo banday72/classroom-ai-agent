@@ -14,3 +14,6 @@ Pillow>=10.3.0
 
 # AI API calls (plain HTTP so you can learn the logic)
 requests>=2.32.0
+
+# Web UI (app/web.py)
+flask>=3.0.0

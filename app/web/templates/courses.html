@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My courses &mdash; Classroom AI Assistant</title>
+<style>
+  body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:#f5f7fa; color:#202124; }
+  header { background:#1a73e8; color:#fff; padding:14px 24px; display:flex; align-items:center; gap:18px; }
+  header h1 { font-size:18px; margin:0; }
+  nav a { color:#fff; text-decoration:none; margin-right:14px; opacity:.9; }
+  main { max-width:800px; margin:22px auto; padding:0 16px; }
+  .card { background:#fff; border:1px solid #e1e4e8; border-radius:10px; padding:18px 20px; }
+  .msg { padding:10px 14px; border-radius:8px; margin-bottom:16px; }
+  .ok { background:#e6f4ea; color:#137333; } .err { background:#fce8e6; color:#c5221f; }
+  ul { padding-left:20px; }
+  li { padding:6px 0; }
+  .muted { color:#5f6368; font-size:13px; }
+  a { color:#1a73e8; }
+</style>
+</head>
+<body>
+<header><h1>My courses</h1><nav><a href="/">Dashboard</a></nav></header>
+<main>
+  {% if msg %}<div class="msg ok">{{ msg }}</div>{% endif %}
+  {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+  <div class="card">
+    {% if courses %}
+      <ul>
+        {% for c in courses %}
+          <li><b>{{ c['name'] }}</b> <span class="muted">(id: {{ c['id'] }})</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No courses found (or not logged in).</p>
+    {% endif %}
+  </div>
+  <p class="muted" style="margin-top:14px"><a href="javascript:void(0)" onclick="document.getElementById('s').submit()">Sync assignments</a> to bring coursework into the app.</p>
+  <form id="s" method="post" action="/sync" style="display:none"></form>
+</main>
+</body>
+</html>
