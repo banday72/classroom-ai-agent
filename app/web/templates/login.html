@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login &mdash; Classroom AI Assistant</title>
+<style>
+  :root { --brand:#1a73e8; --bg:#f5f7fa; --card:#fff; --ink:#202124; --muted:#5f6368; --border:#e1e4e8; }
+  [data-theme="dark"] { --brand:#4c8dff; --bg:#121212; --card:#1e1f22; --ink:#e8eaed; --muted:#9aa0a6; --border:#2f3136; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:var(--bg); color:var(--ink);
+         display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .box { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:30px 28px; width:100%; max-width:360px; }
+  h1 { margin:0 0 6px; font-size:20px; color:var(--brand); }
+  p.muted { color:var(--muted); font-size:13.5px; margin-top:0; }
+  input { width:100%; padding:11px 12px; font-size:15px; border:1px solid var(--border); border-radius:8px;
+          background:var(--bg); color:var(--ink); }
+  button { width:100%; margin-top:14px; padding:11px; background:var(--brand); color:#fff; border:none;
+           border-radius:8px; font-size:15px; cursor:pointer; }
+  .err { background:#fce8e6; color:#c5221f; padding:9px 12px; border-radius:7px; font-size:13.5px; margin-bottom:10px; }
+  [data-theme="dark"] .err { background:#3c1f1c; color:#f28b82; }
+</style>
+<script>
+  (function(){var t=localStorage.getItem("theme"); if(t) document.documentElement.dataset.theme=t;})();
+</script>
+</head>
+<body>
+  <div class="box">
+    <h1>Classroom AI Assistant</h1>
+    <p class="muted">Enter your password to open the app.</p>
+    {% if error %}<div class="err">{{ error }}</div>{% endif %}
+    <form method="post" action="/login">
+      <input type="password" name="password" placeholder="Password" autofocus required>
+      <button type="submit">Open</button>
+    </form>
+  </div>
+</body>
+</html>

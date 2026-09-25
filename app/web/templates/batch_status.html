@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Batch progress &mdash; Classroom AI Assistant{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;font-size:16px">Batch progress</h2>
+  <div id="bar" style="background:var(--border);height:14px;border-radius:7px;overflow:hidden;margin:10px 0 6px">
+    <div id="fill" style="background:var(--brand);height:100%;width:0%;transition:width .4s"></div>
+  </div>
+  <p class="muted" id="summary">Loading...</p>
+  <pre id="log" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;
+      white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;max-height:340px;overflow:auto"></pre>
+  <p><a class="btn" href="/batch">Back to batch</a> <a class="btn gray" href="/">Dashboard</a></p>
+</div>
+<script>
+  async function refresh() {
+    try {
+      const r = await fetch('/batch/status.json');
+      const j = await r.json();
+      const pct = j.total ? Math.round(j.done / j.total * 100) : 0;
+      document.getElementById('fill').style.width = pct + '%';
+      document.getElementById('summary').textContent =
+        (j.running ? 'Running... ' : (j.finished ? 'Finished. ' : 'Idle. ')) +
+        j.done + '/' + j.total + ' done — ' + j.ok + ' solved, ' + j.fail + ' failed';
+      document.getElementById('log').textContent = (j.log || []).join('\n') || '(empty)';
+      if (j.running) setTimeout(refresh, 2500);
+    } catch (e) { setTimeout(refresh, 4000); }
+  }
+  refresh();
+</script>
+{% endblock %}

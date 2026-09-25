@@ -22,11 +22,19 @@ load_dotenv()
 # File system layout
 # ---------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent      # .../classroom_ai_agent
-DATA_DIR = BASE_DIR / "data"
+CREDENTIALS_DIR = BASE_DIR / "credentials"
+
+# Serverless hosts (e.g. Vercel) mount the app folder read-only, so we keep
+# mutable data (SQLite DB, downloads, generated docs) on a writable path.
+if os.getenv("DATA_DIR"):
+    DATA_DIR = Path(os.environ["DATA_DIR"])
+elif os.getenv("VERCEL"):
+    DATA_DIR = Path("/tmp/classroom-data")
+else:
+    DATA_DIR = BASE_DIR / "data"
 DOWNLOADS_DIR = DATA_DIR / "downloads"                 # raw attachments
 GENERATED_DIR = DATA_DIR / "generated"                 # AI-generated .docx
 DB_PATH = DATA_DIR / "app.db"                          # SQLite database
-CREDENTIALS_DIR = BASE_DIR / "credentials"
 
 # Google OAuth client (from Google Cloud Console, Desktop app type)
 CREDENTIALS_FILE = CREDENTIALS_DIR / "credentials.json"

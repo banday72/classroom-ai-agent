@@ -1,95 +1,68 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Classroom AI Assistant</title>
-<style>
-  :root { --brand:#1a73e8; --bg:#f5f7fa; --card:#fff; --ink:#202124; --muted:#5f6368; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:var(--bg); color:var(--ink); }
-  header { background:var(--brand); color:#fff; padding:14px 24px; display:flex; align-items:center; gap:18px; }
-  header h1 { font-size:18px; margin:0; font-weight:600; }
-  nav a { color:#fff; text-decoration:none; margin-right:14px; font-size:14px; opacity:.9; }
-  nav a:hover { opacity:1; }
-  main { max-width:1000px; margin:22px auto; padding:0 16px; }
-  .card { background:var(--card); border:1px solid #e1e4e8; border-radius:10px; padding:18px 20px; margin-bottom:18px; }
-  .badge { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:600; }
-  .badge.secondary{background:#e8eaed;color:#5f6368} .badge.primary{background:#d2e3fc;color:#1a56a8}
-  .badge.warning{background:#fef7e0;color:#9a6700} .badge.success{background:#e6f4ea;color:#137333}
-  .badge.light{background:#f1f1f1;color:#5f6368}
-  .msg { padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:14px; }
-  .msg.ok { background:#e6f4ea; color:#137333; } .msg.err { background:#fce8e6; color:#c5221f; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  th,td { text-align:left; padding:9px 8px; border-bottom:1px solid #eee; vertical-align:top; }
-  th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; }
-  a.btn { display:inline-block; padding:7px 14px; border-radius:7px; text-decoration:none; font-size:13px;
-          background:var(--brand); color:#fff; border:none; cursor:pointer; }
-  a.btn.gray { background:#e8eaed; color:#3c4043; }
-  button.btn { padding:7px 14px; border-radius:7px; font-size:13px; border:none; cursor:pointer; }
-  button.danger { background:#d93025; color:#fff; }
-  .muted { color:var(--muted); font-size:13px; }
-  .stats { display:flex; gap:18px; flex-wrap:wrap; }
-  .stat { text-align:center; }
-  .stat b { display:block; font-size:26px; }
-  .stat span { font-size:12px; color:var(--muted); }
-</style>
-</head>
-<body>
-<header>
-  <h1>Classroom AI Assistant</h1>
-  <nav>
-    <a href="/">Dashboard</a>
-    <a href="/courses">My courses</a>
-    <a href="javascript:void(0)" onclick="document.getElementById('sync').submit()">Sync assignments</a>
-  </nav>
-  <form id="sync" method="post" action="/sync" style="display:none"></form>
-</header>
-<main>
-  {% if msg %}<div class="msg {% if 'failed' in msg or 'error' in msg %}err{% else %}ok{% endif %}">{{ msg }}</div>{% endif %}
+{% extends "base.html" %}
+{% block title %}Dashboard &mdash; Classroom AI Assistant{% endblock %}
+{% block content %}
+<div class="card">
+  {% if auth_ok %}
+    <p class="muted" style="margin-top:0">Logged in to Google &middot; AI model: <b>{{ model }}</b>
+      &middot; <a href="/models">change</a></p>
+  {% else %}
+    <div class="msg err">Not logged in to Google yet. Run the terminal app once (option [1]) or follow README.md.</div>
+  {% endif %}
+  <div class="stats" style="margin-top:8px">
+    {% for label, value, color in stats %}
+    <div class="stat"><b>{{ value }}</b><span>{{ label }}</span></div>
+    {% endfor %}
+  </div>
+</div>
 
-  <div class="card">
-    {% if auth_ok %}
-      <p class="muted">Logged in to Google &mdash; connected to your Classroom.</p>
-    {% else %}
-      <div class="msg err">Not logged in yet. Run <b>python -m app.main</b> once and choose option [1], or follow README.md.</div>
-    {% endif %}
-    <div class="stats" style="margin-top:10px">
-      {% for label, value, color in stats %}
-      <div class="stat"><b>{{ value }}</b><span>{{ label }}</span></div>
+<div class="card">
+  <h2 style="margin-top:0;font-size:16px">Assignments</h2>
+
+  <form class="filters" method="get" action="/">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search title / course...">
+    <select name="status">
+      <option value="">All statuses</option>
+      {% for s in ['pending','ready','approved','submitted','cancelled'] %}
+        <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
       {% endfor %}
-    </div>
-  </div>
+    </select>
+    <select name="course">
+      <option value="">All courses</option>
+      {% for c in courses %}
+        <option value="{{ c }}" {% if course == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn" type="submit">Filter</button>
+    <a class="btn gray" href="/">Clear</a>
+  </form>
 
-  <div class="card">
-    <h2 style="margin-top:0;font-size:16px">Assignments</h2>
-    {% if rows %}
-      <table>
-        <thead><tr><th>Title</th><th>Course</th><th>Due</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-        {% for r in rows %}
-          <tr>
-            <td><b>{{ r['title'] }}</b>
-              {% if r['description'] %}<br><span class="muted">{{ r['description'][:60] }}</span>{% endif %}
-            </td>
-            <td>{{ r['course_name'] }}</td>
-            <td>{{ r['due_date'] or '&mdash;' }}</td>
-            <td><span class="badge {{ {'pending':'secondary','ready':'primary','approved':'warning','submitted':'success','cancelled':'light'}[r['status']] }}">{{ r['status'] }}</span></td>
-            <td>
-              {% if r['status'] == 'pending' %}
-                <a class="btn" href="/process/{{ r['id'] }}">Process</a>
-              {% elif r['status'] in ['ready','approved'] %}
-                <a class="btn" href="/review/{{ r['id'] }}">Review</a>
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p class="muted">No assignments yet. Click <b>Sync assignments</b> above.</p>
-    {% endif %}
+  {% if rows %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Title</th><th>Course</th><th>Due</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><b>{{ r['title'] }}</b>
+          {% if r['description'] %}<br><span class="muted">{{ r['description'][:70] }}</span>{% endif %}
+        </td>
+        <td>{{ r['course_name'] }}</td>
+        <td class="due-{{ r['due_state'] }}">{{ r['due_date'] or '—' }}</td>
+        <td><span class="badge {{ r['badge'] }}">{{ r['status'] }}</span></td>
+        <td>
+          {% if r['status'] == 'pending' %}
+            <a class="btn" href="/process/{{ r['id'] }}">Process</a>
+          {% elif r['status'] in ['ready','approved'] %}
+            <a class="btn" href="/review/{{ r['id'] }}">Review</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
   </div>
-</main>
-</body>
-</html>
+  {% else %}
+    <p class="muted">No assignments match. Press <b>Sync</b> in the top bar to fetch from Classroom.</p>
+  {% endif %}
+</div>
+{% endblock %}

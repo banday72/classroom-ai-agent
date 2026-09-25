@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Batch &mdash; Classroom AI Assistant{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;font-size:16px">Batch processing</h2>
+  <p class="muted">Tick the assignments you want solved. They run one after another in the background
+     (local Ollama — each takes ~1-3 minutes). Nothing is submitted automatically.</p>
+  {% if job.running %}
+    <div class="msg ok">A batch is already running — <a href="/batch/status">view progress</a>.</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  {% if rows %}
+  <form method="post" action="/batch/run">
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>Title</th><th>Course</th><th>Due</th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td><input type="checkbox" name="ids" value="{{ r['id'] }}" checked></td>
+          <td><b>{{ r['title'] }}</b></td>
+          <td>{{ r['course_name'] }}</td>
+          <td>{{ r['due_date'] or '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p><button class="btn" type="submit">Start selected ({{ rows|length }} pending)</button></p>
+  </form>
+  {% else %}
+    <p class="muted">No pending assignments. Sync first.</p>
+  {% endif %}
+</div>
+
+{% if job.finished and not job.running %}
+<div class="card">
+  <h3 style="margin-top:0;font-size:15px">Last batch ({{ job.started }})</h3>
+  <p class="muted">{{ job.ok }} solved, {{ job.fail }} failed.</p>
+  <a class="btn" href="/batch/status">See log</a>
+</div>
+{% endif %}
+{% endblock %}

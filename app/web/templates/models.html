@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}AI models &mdash; Classroom AI Assistant{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;font-size:16px">AI models (local Ollama)</h2>
+  <p class="muted">Currently using <b>{{ current }}</b> from {{ provider }}.
+     Switching changes the model used for all future solves.</p>
+
+  {% if models %}
+  <form method="post" action="/models/select" class="filters">
+    <select name="model">
+      {% for m in models %}
+        <option value="{{ m }}" {% if m == current %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn" type="submit">Use this model</button>
+  </form>
+  {% else %}
+    <div class="msg err">Ollama is not answering. Is it installed and running?</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;font-size:15px">Installed models</h3>
+  {% if models %}
+    <ul>
+      {% for m in models %}<li><code>{{ m }}</code></li>{% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">None found. Pull one from a terminal: <code>ollama pull qwen2.5:3b</code></p>
+  {% endif %}
+  <p class="muted">Provider: {{ provider }} (AI_BASE_URL in .env). API key not required for local models.</p>
+</div>
+{% endblock %}
