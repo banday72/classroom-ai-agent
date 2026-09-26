@@ -6,7 +6,11 @@
   <p class="muted">Currently using <b>{{ current }}</b> from {{ provider }}.
      Switching changes the model used for all future solves.</p>
 
-  {% if models %}
+  {% if serverless %}
+    <div class="msg err">Ollama runs on the owner's PC only — not available on this hosted
+      version. AI here uses the cloud provider above. Set <code>AI_MODEL</code> in the
+      Vercel env vars to change it.</div>
+  {% elif models %}
   <form method="post" action="/models/select" class="filters">
     <select name="model">
       {% for m in models %}
@@ -26,6 +30,9 @@
     <ul>
       {% for m in models %}<li><code>{{ m }}</code></li>{% endfor %}
     </ul>
+  {% elif serverless %}
+    <p class="muted">None on this host. Provider: <b>{{ provider }}</b>
+      (AI_BASE_URL env var).</p>
   {% else %}
     <p class="muted">None found. Pull one from a terminal: <code>ollama pull qwen2.5:3b</code></p>
   {% endif %}

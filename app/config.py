@@ -22,7 +22,6 @@ load_dotenv()
 # File system layout
 # ---------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent      # .../classroom_ai_agent
-CREDENTIALS_DIR = BASE_DIR / "credentials"
 
 # Serverless hosts (e.g. Vercel) mount the app folder read-only, so we keep
 # mutable data (SQLite DB, downloads, generated docs) on a writable path.
@@ -36,6 +35,13 @@ DOWNLOADS_DIR = DATA_DIR / "downloads"                 # raw attachments
 GENERATED_DIR = DATA_DIR / "generated"                 # AI-generated .docx
 DB_PATH = DATA_DIR / "app.db"                          # SQLite database
 
+# Credentials live in the repo folder normally; on serverless hosts they are
+# injected as env vars (git ignores them) so they must sit in writable space.
+if os.getenv("VERCEL"):
+    CREDENTIALS_DIR = DATA_DIR / "credentials"
+else:
+    CREDENTIALS_DIR = BASE_DIR / "credentials"
+
 # Google OAuth client (from Google Cloud Console, Desktop app type)
 CREDENTIALS_FILE = CREDENTIALS_DIR / "credentials.json"
 # Saved user login session (created automatically on first login)
@@ -44,6 +50,21 @@ TOKEN_FILE = CREDENTIALS_DIR / "token.json"
 # Create folders if they do not exist yet
 for _folder in (DATA_DIR, DOWNLOADS_DIR, GENERATED_DIR, CREDENTIALS_DIR):
     _folder.mkdir(parents=True, exist_ok=True)
+
+# Serverless deployments pass the Google files as environment variables
+# (Vercel Dashboard -> Settings -> Environment Variables). Write them to the
+# writable credentials folder once so the Google client library can read
+# them from disk as usual.
+for _env_name, _target in (
+    ("GOOGLE_CLIENT_JSON", CREDENTIALS_FILE),
+    ("GOOGLE_TOKEN_JSON", TOKEN_FILE),
+):
+    _blob = os.getenv(_env_name, "").strip()
+    if _blob and not _target.exists():
+        try:
+            _target.write_text(_blob, encoding="utf-8")
+        except OSError:
+            pass
 
 # ---------------------------------------------------------------------
 # OAuth 2.0 scopes (minimum permissions we ask Google for)

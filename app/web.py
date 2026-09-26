@@ -94,7 +94,9 @@ def _due_state(due_date) -> str:
 
 
 def _ensure_ollama() -> None:
-    """Start Ollama if its local server is not answering."""
+    """Start Ollama if its local server is not answering (PC deployments only)."""
+    if os.getenv("VERCEL"):
+        return  # Ollama only runs on the owner's PC, never on serverless hosts
     try:
         urllib.request.urlopen(f"{OLLAMA_URL}/api/version", timeout=2)
         return
@@ -496,6 +498,8 @@ def batch_status_json():
 # Ollama model switcher
 # ---------------------------------------------------------------------
 def _ollama_models() -> list:
+    if os.getenv("VERCEL"):
+        return []
     try:
         with urllib.request.urlopen(f"{OLLAMA_URL}/api/tags", timeout=5) as resp:
             data = json.loads(resp.read())
@@ -511,12 +515,18 @@ def models():
         current=config.AI_MODEL,
         models=_ollama_models(),
         provider=config.AI_BASE_URL,
+        serverless=bool(os.getenv("VERCEL")),
         msg=request.args.get("msg", ""),
     )
 
 
 @app.route("/models/select", methods=["POST"])
 def models_select():
+    if os.getenv("VERCEL"):
+        return redirect(url_for(
+            "models",
+            msg="Not available here: change AI_MODEL in the Vercel env vars instead.",
+        ))
     chosen = request.form.get("model", "").strip()
     if not chosen:
         return redirect(url_for("models", msg="No model chosen."))
