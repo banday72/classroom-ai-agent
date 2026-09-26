@@ -26,3 +26,6 @@ data/generated/
 Thumbs.db
 .idea/
 .vscode/
+
+# ===== Local tooling (downloaded binaries) =====
+tools/
