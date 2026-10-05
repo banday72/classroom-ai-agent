@@ -29,3 +29,5 @@ Thumbs.db
 
 # ===== Local tooling (downloaded binaries) =====
 tools/
+.vercel
+.env*

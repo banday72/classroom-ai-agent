@@ -536,7 +536,7 @@ def models_select():
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("WEB_PORT", "5000"))
+    port = config._env_int("WEB_PORT", 5000)
     threading.Timer(1.5, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
     _ensure_ollama()
     print(f"WEB_UI on port {port} (open from any device on this WiFi)", flush=True)

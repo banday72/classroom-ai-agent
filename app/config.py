@@ -18,6 +18,43 @@ from dotenv import load_dotenv
 # Load .env from the project root (folder that contains the app/ package)
 load_dotenv()
 
+
+def _env_str(name, default=""):
+    """Read a string env var, treating blank values as unset.
+
+    Hosting dashboards often save a variable as an empty string, which would
+    otherwise defeat the default below.
+    """
+    value = os.getenv(name)
+    if value is None:
+        return default
+    value = value.strip()
+    return value if value else default
+
+
+def _env_float(name, default):
+    """Read a float env var, ignoring blank or unparsable values."""
+    try:
+        return float(_env_str(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_int(name, default):
+    """Read an int env var, ignoring blank or unparsable values."""
+    try:
+        return int(float(_env_str(name, str(default))))
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_bool(name, default=False):
+    """Read a boolean env var from common truthy spellings."""
+    value = _env_str(name, "").lower()
+    if not value:
+        return default
+    return value in ("1", "true", "yes", "on")
+
 # ---------------------------------------------------------------------
 # File system layout
 # ---------------------------------------------------------------------
@@ -26,7 +63,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent      # .../classroom_ai_agent
 # Serverless hosts (e.g. Vercel) mount the app folder read-only, so we keep
 # mutable data (SQLite DB, downloads, generated docs) on a writable path.
 if os.getenv("DATA_DIR"):
-    DATA_DIR = Path(os.environ["DATA_DIR"])
+    DATA_DIR = Path(os.environ["DATA_DIR"].strip() or "/tmp/classroom-data")
 elif os.getenv("VERCEL"):
     DATA_DIR = Path("/tmp/classroom-data")
 else:
@@ -82,10 +119,10 @@ SCOPES = [
 # ---------------------------------------------------------------------
 # AI settings (from .env). No key is ever hard-coded.
 # ---------------------------------------------------------------------
-AI_API_KEY = os.getenv("AI_API_KEY", "").strip()
-AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-AI_MODEL = os.getenv("AI_MODEL", "gpt-4o-mini").strip()
-AI_TEMPERATURE = float(os.getenv("AI_TEMPERATURE", "0.3"))
+AI_API_KEY = _env_str("AI_API_KEY")
+AI_BASE_URL = _env_str("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+AI_MODEL = _env_str("AI_MODEL", "gpt-4o-mini")
+AI_TEMPERATURE = _env_float("AI_TEMPERATURE", 0.3)
 
 # Safety limit: skip attachments larger than this
 MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024  # 50 MB
